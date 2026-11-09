@@ -1,19 +1,11 @@
 services:
   - type: web
     name: marco-samson-portfolio
-    runtime: node
+    runtime: docker
     plan: free
-    rootDir: portfolio
-    buildCommand: npm ci --include=dev && npm test && npm run build
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /healthz
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NODE_VERSION
-        value: 24.13.1
-      - key: STORAGE_BACKEND
-        value: postgres
       - key: DATABASE_URL
         sync: false
       - key: ADMIN_PASSWORD

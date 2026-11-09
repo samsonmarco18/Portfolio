@@ -1,0 +1,42 @@
+{
+  "name": "Marco Samson",
+  "intro": "Thoughtful code. Meaningful experiences.",
+  "about": "I build digital experiences that bring ideas to life. Explore a selection of my work, from interactive learning to tools that help people work better.",
+  "email": "",
+  "profile": "",
+  "projects": [
+    {
+      "id": "quizweb",
+      "title": "QuizWeb",
+      "category": "INTERACTIVE LEARNING",
+      "description": "A space for learning, curiosity, and a little friendly challenge. Project details coming soon.",
+      "technologies": [],
+      "role": "Add your role and contributions here.",
+      "url": "https://chalk-web.onrender.com/QuizWeb/",
+      "images": [],
+      "theme": "pink"
+    },
+    {
+      "id": "ddpmss",
+      "title": "Decision-Driven Project Management Support System",
+      "category": "PROJECT MANAGEMENT",
+      "description": "Turning project information into clearer decisions. Project details coming soon.",
+      "technologies": [],
+      "role": "Add your role and contributions here.",
+      "url": "https://erni-pms.onrender.com/login",
+      "images": [],
+      "theme": "lime"
+    },
+    {
+      "id": "harvee",
+      "title": "Harvee",
+      "category": "WEB APPLICATION",
+      "description": "An idea brought to life on the web. Project details coming soon.",
+      "technologies": [],
+      "role": "Add your role and contributions here.",
+      "url": "https://harvee.onrender.com/",
+      "images": [],
+      "theme": "blue"
+    }
+  ]
+}
