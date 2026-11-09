@@ -1,0 +1,165 @@
+{
+  "name": "Marco Samson",
+  "intro": "Thoughtful code. Meaningful experiences.",
+  "about": "I build web applications that turn everyday tasks into clear, usable experiences. My projects explore classroom learning, project management, and local commerce, with a focus on organizing information and making each step easier to follow.",
+  "email": "",
+  "profile": "",
+  "projects": [
+    {
+      "id": "quizweb",
+      "title": "QuizWeb",
+      "category": "INTERACTIVE LEARNING",
+      "description": "A classroom quiz platform that brings teaching and learning into one space. Teachers can manage classes, prepare AI-assisted quizzes, review submissions, and communicate with students. Learners have a dedicated dashboard to access quizzes and follow their classroom activity.",
+      "technologies": [],
+      "role": "",
+      "url": "https://chalk-web.onrender.com/QuizWeb/",
+      "images": [
+        {
+          "id": "quizweb-1",
+          "url": "/assets/projects/quizweb/cover.png",
+          "caption": "A welcoming sign-in screen introduces Chalk, the classroom quiz space."
+        },
+        {
+          "id": "quizweb-2",
+          "url": "/assets/projects/quizweb/teacher-dasboard.png",
+          "caption": "The teacher dashboard brings classroom activity and quiz management together."
+        },
+        {
+          "id": "quizweb-3",
+          "url": "/assets/projects/quizweb/teacher-ai-generation-quizess.png",
+          "caption": "AI-assisted quiz creation helps teachers prepare classroom assessments."
+        },
+        {
+          "id": "quizweb-4",
+          "url": "/assets/projects/quizweb/teacher-class-view.png",
+          "caption": "The class view organizes students and classroom quiz activity."
+        },
+        {
+          "id": "quizweb-5",
+          "url": "/assets/projects/quizweb/teacher-grading-view.png",
+          "caption": "The grading workspace gives teachers a dedicated view for reviewing student work."
+        },
+        {
+          "id": "quizweb-6",
+          "url": "/assets/projects/quizweb/student-dashboard.png",
+          "caption": "The student dashboard provides a starting point for learning and classroom activity."
+        },
+        {
+          "id": "quizweb-7",
+          "url": "/assets/projects/quizweb/student-quiz-view.png",
+          "caption": "The quiz view gives students a focused space to answer questions."
+        },
+        {
+          "id": "quizweb-8",
+          "url": "/assets/projects/quizweb/messaging.png",
+          "caption": "Built-in messaging supports communication between teachers and students."
+        }
+      ],
+      "theme": "pink"
+    },
+    {
+      "id": "ddpmss",
+      "title": "Decision-Driven Project Management Support System",
+      "category": "PROJECT MANAGEMENT",
+      "description": "A centralized workspace for understanding projects and planning the next step. Dashboard summaries, project insights, client records, a shared calendar, and process history bring key information together for day-to-day decisions.",
+      "technologies": [],
+      "role": "",
+      "url": "https://erni-pms.onrender.com/login",
+      "images": [
+        {
+          "id": "ddpmss-1",
+          "url": "/assets/projects/ddpmss/evortix.png",
+          "caption": "The Evortix interface introduces the project management workspace."
+        },
+        {
+          "id": "ddpmss-2",
+          "url": "/assets/projects/ddpmss/dashboard.png",
+          "caption": "The dashboard brings client totals, project trends, release updates, and upcoming schedules into one view."
+        },
+        {
+          "id": "ddpmss-3",
+          "url": "/assets/projects/ddpmss/project-insights.png",
+          "caption": "Project insights provide a dedicated space to review project information and support planning."
+        },
+        {
+          "id": "ddpmss-4",
+          "url": "/assets/projects/ddpmss/calendar.png",
+          "caption": "A calendar view organizes schedules and upcoming project activities."
+        },
+        {
+          "id": "ddpmss-5",
+          "url": "/assets/projects/ddpmss/client-list.png",
+          "caption": "The client list keeps customer records accessible alongside project work."
+        },
+        {
+          "id": "ddpmss-6",
+          "url": "/assets/projects/ddpmss/history.png",
+          "caption": "Process history provides a reference for reviewing previous project activity."
+        },
+        {
+          "id": "ddpmss-7",
+          "url": "/assets/projects/ddpmss/login.png",
+          "caption": "A dedicated sign-in screen provides access to the workspace."
+        }
+      ],
+      "theme": "lime"
+    },
+    {
+      "id": "harvee",
+      "title": "Harvee",
+      "category": "FARM-TO-DOOR MARKETPLACE",
+      "description": "A farm-to-door marketplace connecting customers, farmers, and delivery drivers. Customers can browse produce, manage delivery addresses, and check out, while dedicated farmer and driver workspaces support products, orders, and delivery activity.",
+      "technologies": [],
+      "role": "",
+      "url": "https://harvee.onrender.com/",
+      "images": [
+        {
+          "id": "harvee-1",
+          "url": "/assets/projects/harvee/home-page.png",
+          "caption": "Harvee introduces its farm-to-door service with produce search and entry points for customers, farmers, and drivers."
+        },
+        {
+          "id": "harvee-2",
+          "url": "/assets/projects/harvee/customer-browsing.png",
+          "caption": "The browsing experience helps customers explore available produce."
+        },
+        {
+          "id": "harvee-3",
+          "url": "/assets/projects/harvee/customer-dashboard.png",
+          "caption": "The customer dashboard brings shopping and account activity together."
+        },
+        {
+          "id": "harvee-4",
+          "url": "/assets/projects/harvee/checkout-customer.png",
+          "caption": "The checkout screen guides customers through placing an order."
+        },
+        {
+          "id": "harvee-5",
+          "url": "/assets/projects/harvee/customer-manage-address.png",
+          "caption": "Address management keeps delivery destinations organized."
+        },
+        {
+          "id": "harvee-6",
+          "url": "/assets/projects/harvee/farmer-dashboard.png",
+          "caption": "The farmer dashboard provides an overview of marketplace activity."
+        },
+        {
+          "id": "harvee-7",
+          "url": "/assets/projects/harvee/farmer-products.png",
+          "caption": "Product management gives farmers a dedicated space for their listings."
+        },
+        {
+          "id": "harvee-8",
+          "url": "/assets/projects/harvee/order-management-farmer.png",
+          "caption": "Order management helps farmers review and handle incoming customer orders."
+        },
+        {
+          "id": "harvee-9",
+          "url": "/assets/projects/harvee/driver-dashboard.png",
+          "caption": "The driver dashboard provides a dedicated workspace for delivery activity."
+        }
+      ],
+      "theme": "blue"
+    }
+  ]
+}

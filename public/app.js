@@ -114,14 +114,14 @@ function detail(id) {
     esc(p.title) +
     '</h1><p class="lead">' +
     esc(p.description) +
-    '</p><div class="facts"><div><span class="eyebrow">MY ROLE & CONTRIBUTIONS</span><p>' +
-    esc(p.role) +
-    '</p></div><div><span class="eyebrow">BUILT WITH</span><div>' +
+    '</p><div class="facts"><div><span class="eyebrow">PROJECT OVERVIEW</span><p>' +
+    esc(p.role || "Explore the interface and workflows in the screenshots below.") +
+    '</p></div><div><span class="eyebrow">PROJECT FOCUS</span><div>' +
     (p.technologies.length
       ? p.technologies
           .map((t) => '<span class="tag">' + esc(t) + "</span>")
           .join("")
-      : '<p class="notice">Details coming soon.</p>') +
+      : '<p class="notice">Interface &amp; application workflows.</p>') +
     '</div></div><div><span class="eyebrow">TAKE A LOOK</span><p>' +
     (p.url
       ? '<a class="btn" href="' +
@@ -224,7 +224,18 @@ window.addEventListener("beforeunload", (e) => {
 });
 (async () => {
   try {
-    content = await api("content");
+    const defaults = await fetch("/default-content.json").then(r => { if (!r.ok) throw Error("Defaults unavailable"); return r.json(); });
+    try { content = await api("content"); }
+    catch (error) { if (location.pathname === "/my-admin") throw error; content = defaults; }
+    content.projects = content.projects.map(project => {
+      const fallback = defaults.projects.find(item => item.id === project.id);
+      if (!fallback) return project;
+      return { ...project,
+        images: project.images.length ? project.images : fallback.images,
+        description: project.description.includes("Project details coming soon.") ? fallback.description : project.description,
+        role: project.role === "Add your role and contributions here." ? "" : project.role
+      };
+    });
     document.querySelector("#brand").innerHTML =
       esc(content.name.split(" ")[0].toLowerCase()) + "<span>®</span>";
     document.querySelector("#copyright").textContent =

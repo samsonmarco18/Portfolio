@@ -9,7 +9,8 @@ function text_field(array $data, string $key, int $maximum, bool $required = tru
 function valid_media(string $url): bool
 {
     // Includes earlier UUID uploads so existing PostgreSQL content keeps working.
-    return (bool) preg_match('~^/media/images/[a-f0-9\-]{20,80}$~D', $url);
+    return (bool) preg_match('~^/media/images/[a-f0-9\-]{20,80}$~D', $url)
+        || (bool) preg_match('~^/assets/projects/(quizweb|ddpmss|harvee)/[a-z0-9-]+\.png$~D', $url);
 }
 
 function valid_content(array $content): bool
