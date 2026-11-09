@@ -40,7 +40,7 @@ try {
         $response = (new Api(PostgresStorage::connect()))->handle([
             'path' => $path, 'method' => $method, 'origin' => $_SERVER['HTTP_ORIGIN'] ?? '', 'expectedOrigin' => $origin,
             'token' => is_string($_COOKIE['portfolio_session'] ?? null) ? $_COOKIE['portfolio_session'] : '', 'secure' => str_starts_with($origin, 'https://'),
-            'body' => file_get_contents('php://input', false, null, 0, 500001), 'image' => $image, 'uploadError' => $file['error'] ?? UPLOAD_ERR_NO_FILE, 'ip' => $ip,
+            'body' => file_get_contents('php://input', false, null, 0, 2000001), 'image' => $image, 'uploadError' => $file['error'] ?? UPLOAD_ERR_NO_FILE, 'ip' => $ip,
         ]);
         http_response_code($response['status']);
         foreach ($response['headers'] as $name => $value) header($name . ': ' . $value);

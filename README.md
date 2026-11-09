@@ -23,7 +23,19 @@ render.yaml        Free Render Docker service
 router.php         Local PHP development routing
 ```
 
-The existing design, three project pages, profile editor, image captions, replacement, removal, and reordering are unchanged. The browser calls `/api/...`; PHP handles authentication, validation, and database writes. Only `public/` is exposed by the web server. Backend source, configuration, and database credentials are not publicly served.
+The portfolio includes a visual project editor. The browser calls `/api/...`; PHP handles authentication, validation, and PostgreSQL writes. Only `public/` is exposed by the web server. Backend source, configuration, and database credentials are not publicly served.
+
+## Use the visual editor
+
+1. Sign in at `/my-admin` and choose a project card.
+2. Click **Add pictures** to select multiple PNG, JPG, or WebP files, or drop files onto the canvas. You can add up to 60 pictures per project, up to 10 MB each. Uploads append to your existing gallery.
+3. Drag pictures/text around the canvas. Drag a selected element's corner handles to resize it. Arrow keys nudge a selected block; Shift + arrow moves it by 10 pixels. Numeric Left/Top/Width/Height fields provide precise control.
+4. Select **Heading** or **Text** to add a text box. Edit its wording, font size, color, weight, and alignment in the inspector. Double-clicking a text box focuses its text field.
+5. Select a picture to edit its caption, replace it, choose fit/crop, or make it the homepage cover. Remove detaches it from the gallery; Undo restores it before saving.
+6. Use the layer buttons for overlapping elements, Undo/Redo for recent canvas edits, and **Arrange images in a grid** for a quick tidy layout. Adjust canvas height/color in the inspector. The Preview button shows your unsaved layout.
+7. Expand **Project details** for title, description, technologies, and links, or **Homepage & profile** for your introduction and photo. Click **Save changes** to publish everything.
+
+On desktop, project pages use the positions and dimensions you saved. On phones, content stacks in reading order so pictures and text remain legible. Layouts are saved with project content in PostgreSQL; no database migration is required. Earlier galleries remain compatible and receive a starting layout when opened in the editor. New editor code is in `public/editor.js` and `public/admin.js`.
 
 ## Deploy to Render for free
 
@@ -87,6 +99,8 @@ php tests/startup.php
 ```
 
 The API checks use an in-memory test storage implementation to verify login, cookie flags, origin checks, logout, rate limiting, uploads, captions/profile saving, validation, and legacy password compatibility. They do not require a database or alter production data.
+
+Optional JavaScript checks (Node is a test tool only): `node --test tests/layout.cjs` validates canvas placement, resizing bounds, escaping, and mobile reading order. `tests/editor-dom.cjs` additionally uses jsdom to exercise pointer dragging/resizing, undo/redo, multiple uploads, text editing, saving, and rendering the saved public project page. To run it, make jsdom available to Node or set `PORTFOLIO_JSDOM` to its installed module path, then run `node --test tests/editor-dom.cjs`.
 
 For real PDO/PostgreSQL integration, set `TEST_DATABASE_URL` to a disposable test database and run:
 

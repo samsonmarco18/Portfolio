@@ -33,7 +33,42 @@ function valid_content(array $content): bool
         foreach ($project['technologies'] as $technology) if (!is_string($technology) || strlen($technology) > 100) return false;
         foreach ($project['images'] as $image) {
             if (!is_array($image) || !text_field($image, 'url', 200) || !valid_media($image['url']) || !text_field($image, 'caption', 3000)) return false;
+            if (isset($image['id']) && (!is_string($image['id']) || !preg_match('/^[a-zA-Z0-9-]{1,80}$/D', $image['id']))) return false;
         }
+        if (isset($project['layout']) && !valid_layout($project['layout'], $project['images'])) return false;
+    }
+    return true;
+}
+
+function layout_number(mixed $value, float $min, float $max): bool
+{
+    return (is_int($value) || is_float($value)) && is_finite((float) $value) && $value >= $min && $value <= $max;
+}
+
+function valid_layout(mixed $layout, array $images): bool
+{
+    if (!is_array($layout) || !layout_number($layout['height'] ?? null, 600, 30000)
+        || !is_string($layout['background'] ?? null) || !preg_match('/^#[a-fA-F0-9]{6}$/D', $layout['background'])
+        || !isset($layout['blocks']) || !is_array($layout['blocks']) || !array_is_list($layout['blocks']) || count($layout['blocks']) > 120) return false;
+    $imageIds = [];
+    foreach ($images as $image) {
+        if (!isset($image['id']) || isset($imageIds[$image['id']])) return false;
+        $imageIds[$image['id']] = true;
+    }
+    $ids = [];
+    foreach ($layout['blocks'] as $block) {
+        if (!is_array($block) || !text_field($block, 'id', 80) || !preg_match('/^[a-zA-Z0-9-]{1,80}$/D', $block['id']) || isset($ids[$block['id']])
+            || !layout_number($block['x'] ?? null, 0, 1200) || !layout_number($block['y'] ?? null, 0, $layout['height'])
+            || !layout_number($block['w'] ?? null, 60, 1200) || !layout_number($block['h'] ?? null, 40, $layout['height'])
+            || $block['x'] + $block['w'] > 1200.01 || $block['y'] + $block['h'] > $layout['height'] + 0.01) return false;
+        $ids[$block['id']] = true;
+        if (($block['type'] ?? '') === 'image') {
+            if (!is_string($block['imageId'] ?? null) || !isset($imageIds[$block['imageId']]) || !in_array($block['fit'] ?? '', ['contain', 'cover'], true)) return false;
+        } elseif (($block['type'] ?? '') === 'text') {
+            if (!text_field($block, 'text', 3000) || !layout_number($block['fontSize'] ?? null, 12, 120)
+                || !is_string($block['color'] ?? null) || !preg_match('/^#[a-fA-F0-9]{6}$/D', $block['color'])
+                || !in_array($block['align'] ?? '', ['left', 'center', 'right'], true) || !in_array($block['weight'] ?? 0, [400, 700], true)) return false;
+        } else return false;
     }
     return true;
 }

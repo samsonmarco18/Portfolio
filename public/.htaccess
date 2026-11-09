@@ -1,5 +1,5 @@
 Options -Indexes
 RewriteEngine On
-RewriteRule ^(?:app\.js|styles\.css)$ - [L]
+RewriteRule ^(?:app\.js|admin\.js|editor\.js|styles\.css)$ - [L]
 RewriteRule ^index\.php$ - [L]
 RewriteRule ^ index.php [L]

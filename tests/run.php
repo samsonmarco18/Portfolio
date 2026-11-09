@@ -51,6 +51,28 @@ $content['profile'] = $url;
 check($call('/api/content', 'PUT', $content, $token)['status'] === 200, 'editor saves gallery, technologies and profile');
 $saved = json_decode((new Api($storage))->handle(['path' => '/api/content', 'method' => 'GET', 'expectedOrigin' => 'https://portfolio.test'])['body'], true);
 check($saved['projects'][0]['images'][0]['caption'] === 'A saved screenshot' && $saved['profile'] === $url, 'new API instance loads saved content');
+$secondUpload = $call('/api/upload', 'POST', null, $token, ['image' => $png]);
+$secondUrl = json_decode($secondUpload['body'], true)['url'];
+$content['projects'][0]['images'] = [
+    ['id' => 'picture-one', 'url' => $url, 'caption' => 'First picture'],
+    ['id' => 'picture-two', 'url' => $secondUrl, 'caption' => 'Second picture'],
+];
+$content['projects'][0]['layout'] = ['height' => 1400, 'background' => '#1e211f', 'blocks' => [
+    ['id' => 'image-one', 'type' => 'image', 'imageId' => 'picture-one', 'x' => 48.5, 'y' => 180, 'w' => 540, 'h' => 500, 'fit' => 'contain'],
+    ['id' => 'image-two', 'type' => 'image', 'imageId' => 'picture-two', 'x' => 612, 'y' => 180, 'w' => 540, 'h' => 500, 'fit' => 'cover'],
+    ['id' => 'heading-one', 'type' => 'text', 'text' => 'A visual project story', 'x' => 48, 'y' => 40, 'w' => 1104, 'h' => 100, 'fontSize' => 64, 'color' => '#d5f878', 'align' => 'left', 'weight' => 700],
+]];
+check($call('/api/content', 'PUT', $content, $token)['status'] === 200, 'multiple pictures and draggable text/image layout save together');
+$canvasSaved = json_decode($call('/api/content')['body'], true)['projects'][0];
+check(count($canvasSaved['images']) === 2 && $canvasSaved['layout']['blocks'][0]['x'] === 48.5 && $canvasSaved['layout']['blocks'][2]['fontSize'] === 64, 'saved canvas keeps every picture, position, size and text style');
+$badLayout = $content; $badLayout['projects'][0]['layout']['blocks'][0]['w'] = 2000;
+check($call('/api/content', 'PUT', $badLayout, $token)['status'] === 400, 'canvas elements cannot exceed canvas bounds');
+$badLayout = $content; $badLayout['projects'][0]['layout']['blocks'][0]['imageId'] = 'unknown-picture';
+check(!valid_content($badLayout), 'canvas rejects references to missing pictures');
+$badLayout = $content; $badLayout['projects'][0]['layout']['background'] = 'url(javascript:alert(1))';
+check(!valid_content($badLayout), 'canvas colors cannot inject CSS');
+$badLayout = $content; $badLayout['projects'][0]['layout']['blocks'][2]['fontSize'] = -2;
+check(!valid_content($badLayout), 'text size must remain in the supported range');
 $bad = $content; $bad['projects'][0]['url'] = 'javascript:alert(1)';
 check($call('/api/content', 'PUT', $bad, $token)['status'] === 400, 'unsafe project links are rejected');
 $bad = $content; $bad['projects'][0]['images'][0]['url'] = '/media/auth';

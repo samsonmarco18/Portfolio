@@ -129,21 +129,23 @@ function detail(id) {
         '" target="_blank" rel="noopener noreferrer">Visit live project ↗</a>'
       : '<span class="notice">Link coming soon.</span>') +
     '</p></div></div><div class="gallery">' +
-    (p.images.length
-      ? p.images
-          .map(
-            (i) =>
-              '<figure><img src="' +
-              esc(i.url) +
-              '" alt="' +
-              esc(i.caption || p.title) +
-              '" loading="lazy"><figcaption>' +
-              esc(i.caption) +
-              "</figcaption></figure>",
-          )
-          .join("")
-      : art(p) +
-        '<p class="notice">Concept cover. Project screenshots and captions will be added soon.</p>') +
+    (p.layout?.blocks?.length
+      ? PortfolioCanvas.render(p)
+      : p.images.length
+        ? p.images
+            .map(
+              (i) =>
+                '<figure><img src="' +
+                esc(i.url) +
+                '" alt="' +
+                esc(i.caption || p.title) +
+                '" loading="lazy"><figcaption>' +
+                esc(i.caption) +
+                "</figcaption></figure>",
+            )
+            .join("")
+        : art(p) +
+          '<p class="notice">Concept cover. Project screenshots and captions will be added soon.</p>') +
     '</div><div class="sectionhead" style="margin-top:70px"><span class="eyebrow">KEEP EXPLORING</span><a href="/projects/' +
     esc(next.id) +
     '">' +
@@ -203,180 +205,7 @@ function field(label, key, val, multi = false) {
   );
 }
 function editor() {
-  let p = content.projects[selected];
-  app.innerHTML =
-    '<section class="admin"><div class="actions" style="justify-content:space-between"><a href="/" target="_blank" class="notice">VIEW PORTFOLIO ↗</a><button id="logout" class="btn secondary">Sign out</button></div><h1>A little update goes a long way.</h1><p class="notice">Edit your introduction or choose a project. Save when you’re ready.</p><details class="adminpanel"><summary>Homepage & profile</summary>' +
-    field("Your name", "name", content.name) +
-    field("Headline", "intro", content.intro) +
-    field("About me", "about", content.about, true) +
-    field("Contact email (optional)", "email", content.email) +
-    '<label for="profile">Profile picture</label>' +
-    (content.profile
-      ? '<img class="portrait" src="' +
-        esc(content.profile) +
-        '" alt="Profile">'
-      : "") +
-    '<input id="profile" type="file" accept="image/png,image/jpeg,image/webp"><button type="button" id="removeprofile" class="btn secondary" style="margin-top:10px">Remove profile picture</button></details><div class="admincards">' +
-    content.projects
-      .map(
-        (p, i) =>
-          '<button class="admincard ' +
-          (i === selected ? "active" : "") +
-          '" data-select="' +
-          i +
-          '"><small>PROJECT 0' +
-          (i + 1) +
-          "</small>" +
-          esc(p.title) +
-          '<br><span style="color:var(--lime);font-size:12px">Edit project ↗</span></button>',
-      )
-      .join("") +
-    '</div><div class="adminpanel"><span class="eyebrow">PROJECT DETAILS</span>' +
-    field("Project title", "title", p.title) +
-    field("Category", "category", p.category) +
-    field("Short description", "description", p.description, true) +
-    field("My role & contributions", "role", p.role, true) +
-    field(
-      "Technologies (separate with commas)",
-      "technologies",
-      p.technologies.join(", "),
-    ) +
-    field("Live project URL (optional)", "url", p.url) +
-    '<label for="images">Screenshots · PNG, JPG, WebP · up to 10 MB each</label><input id="images" type="file" multiple accept="image/png,image/jpeg,image/webp"><p class="notice">The first image becomes the project thumbnail. Use the arrows to reorder.</p><div id="imagelist">' +
-    p.images
-      .map(
-        (img, i) =>
-          '<div class="imageedit"><img src="' +
-          esc(img.url) +
-          '" alt="Screenshot ' +
-          (i + 1) +
-          '"><div><label for="caption' +
-          i +
-          '">Caption ' +
-          (i + 1) +
-          '</label><input id="caption' +
-          i +
-          '" data-caption="' +
-          i +
-          '" value="' +
-          esc(img.caption) +
-          '"><div class="actions" style="margin-top:10px"><button class="btn secondary" data-up="' +
-          i +
-          '" ' +
-          (i === 0 ? "disabled" : "") +
-          '>↑ Up</button><button class="btn secondary" data-down="' +
-          i +
-          '" ' +
-          (i === p.images.length - 1 ? "disabled" : "") +
-          '>↓ Down</button><button class="btn secondary" data-delete="' +
-          i +
-          '">Remove</button><label style="margin:0" class="btn secondary">Replace<input type="file" class="hidden" data-replace="' +
-          i +
-          '" accept="image/png,image/jpeg,image/webp"></label></div></div></div>',
-      )
-      .join("") +
-    '</div></div><div class="savebar"><span id="message" role="status" class="status">' +
-    (dirty ? "Unsaved changes" : "Everything is up to date") +
-    '</span><button id="save" class="btn">Save changes ↗</button></div></section>';
-  ["name", "intro", "about", "email"].forEach(
-    (k) =>
-      (document.getElementById(k).oninput = (e) => {
-        content[k] = e.target.value;
-        changed();
-      }),
-  );
-  ["title", "category", "description", "role", "url", "technologies"].forEach(
-    (k) =>
-      (document.getElementById(k).oninput = (e) => {
-        p[k] =
-          k === "technologies"
-            ? e.target.value
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean)
-            : e.target.value;
-        changed();
-      }),
-  );
-  document.querySelectorAll("[data-select]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        selected = +b.dataset.select;
-        editor();
-      }),
-  );
-  document.querySelectorAll("[data-caption]").forEach(
-    (b) =>
-      (b.oninput = () => {
-        p.images[+b.dataset.caption].caption = b.value;
-        changed();
-      }),
-  );
-  ["up", "down", "delete"].forEach((action) =>
-    document.querySelectorAll("[data-" + action + "]").forEach(
-      (b) =>
-        (b.onclick = () => {
-          let i = +b.dataset[action];
-          if (action === "delete") p.images.splice(i, 1);
-          else {
-            let j = i + (action === "up" ? -1 : 1);
-            [p.images[i], p.images[j]] = [p.images[j], p.images[i]];
-          }
-          dirty = true;
-          editor();
-        }),
-    ),
-  );
-  document.querySelectorAll("[data-replace]").forEach(
-    (el) =>
-      (el.onchange = async () => {
-        if (!el.files[0]) return;
-        await uploadTask(async () => {
-          p.images[+el.dataset.replace].url = await upload(el.files[0]);
-        });
-      }),
-  );
-  document.querySelector("#images").onchange = async (e) => {
-    let files = [...e.target.files];
-    await uploadTask(async () => {
-      for (let f of files) {
-        if (p.images.length >= 60) throw Error("Maximum 60 images per project");
-        p.images.push({ url: await upload(f), caption: "" });
-      }
-    });
-  };
-  document.querySelector("#profile").onchange = async (e) => {
-    if (e.target.files[0])
-      await uploadTask(async () => {
-        content.profile = await upload(e.target.files[0]);
-      });
-  };
-  document.querySelector("#removeprofile").onclick = () => {
-    content.profile = "";
-    dirty = true;
-    editor();
-  };
-  document.querySelector("#save").onclick = async () => {
-    let b = document.querySelector("#save");
-    b.disabled = true;
-    try {
-      await api("content", "PUT", content);
-      dirty = false;
-      document.querySelector("#message").textContent =
-        "Saved — your portfolio is updated.";
-    } catch (e) {
-      document.querySelector("#message").textContent = e.message;
-    } finally {
-      b.disabled = false;
-    }
-  };
-  document.querySelector("#logout").onclick = async () => {
-    if (dirty && !confirm("Discard unsaved changes and sign out?")) return;
-    await api("logout", "POST");
-    dirty = false;
-    content = await api("content");
-    admin();
-  };
+  openPortfolioEditor();
 }
 function changed() {
   dirty = true;
@@ -386,19 +215,6 @@ async function upload(file) {
   let form = new FormData();
   form.append("image", file);
   return (await api("upload", "POST", form)).url;
-}
-async function uploadTask(fn) {
-  document.querySelector("#message").textContent = "Uploading…";
-  document.querySelector("#save").disabled = true;
-  try {
-    await fn();
-    dirty = true;
-    editor();
-  } catch (e) {
-    dirty = true;
-    editor();
-    document.querySelector("#message").textContent = e.message;
-  }
 }
 window.addEventListener("beforeunload", (e) => {
   if (dirty) {

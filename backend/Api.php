@@ -65,7 +65,7 @@ final class Api
             return $this->response(['ok' => true], 200, ['Set-Cookie' => $this->cookie('', 0, $secure)]);
         }
         if ($path === '/api/content' && $method === 'PUT') {
-            if (strlen($request['body'] ?? '') > 500000) return $this->response(['error' => 'Content is too large.'], 413);
+            if (strlen($request['body'] ?? '') > 2000000) return $this->response(['error' => 'Content is too large.'], 413);
             $content = $this->parseBody($request['body'] ?? '');
             if ($content === null || !valid_content($content)) return $this->response(['error' => 'Please check the content and links.'], 400);
             write_record($this->storage, 'content', $content);
