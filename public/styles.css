@@ -1244,3 +1244,15 @@ section[id] { scroll-margin-top: 30px; }
   .gallery { grid-template-columns: 1fr; gap: 22px; }
   .gallery figure { padding: 12px; }
 }
+.social-settings { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 24px; }
+.social-settings h2 { font-size: 21px; }
+.social-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 36px; max-width: 850px; }
+.contact .social-link { display: flex; align-items: center; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: var(--panel); transition: border-color .2s, transform .2s; }
+.contact .social-link:hover { border-color: var(--lime); transform: translateY(-3px); }
+.social-icon { flex-shrink: 0; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; background: #d5f87812; color: var(--lime); font-size: 22px; font-weight: 700; }
+.social-copy { flex: 1; min-width: 0; }
+.social-copy strong, .social-copy small { display: block; }
+.social-copy strong { font-size: 16px; font-weight: 500; }
+.social-copy small { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.social-link > span:last-child { color: var(--lime); }
+@media(max-width:550px) { .social-links { grid-template-columns: 1fr; } .contact .social-link { padding: 18px; } }

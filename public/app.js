@@ -66,6 +66,36 @@ function card(p, i) {
     '</p><span class="notice">View project</span></div><span class="arrow">↗</span></div></a>'
   );
 }
+function socialLinks() {
+  const profiles = [
+    ["linkedin", "LinkedIn", "in", "Connect professionally"],
+    ["email", "Gmail", "@", "Send me an email"],
+    ["facebook", "Facebook", "f", "Find me on Facebook"],
+    ["github", "GitHub", "{ }", "Explore my repositories"]
+  ];
+  const links = profiles.map(([key, label, icon, description]) => {
+    const value = (content[key] || "").trim();
+    if (!value) return "";
+    let href;
+    if (key === "email") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "";
+      href = "mailto:" + encodeURIComponent(value);
+    } else {
+      try {
+        const url = new URL(value);
+        if (url.protocol !== "https:" || url.username || url.password) return "";
+        href = url.href;
+      } catch { return ""; }
+    }
+    return '<a class="social-link" href="' + esc(href) + '"' +
+      (key === "email" ? "" : ' target="_blank" rel="noopener noreferrer"') +
+      '><span class="social-icon" aria-hidden="true">' + icon +
+      '</span><span class="social-copy"><strong>' + label + '</strong><small>' + description +
+      '</small></span><span aria-hidden="true">&#8599;</span></a>';
+  }).join("");
+  return links ? '<div class="social-links" aria-label="Contact and social profiles">' + links + '</div>' :
+    '<p class="notice">Open to conversations, collaborations, and new opportunities.</p>';
+}
 function home() {
   app.innerHTML =
     '<section class="hero"><span class="eyebrow">INDEPENDENT DEVELOPER / ' +
@@ -92,9 +122,7 @@ function home() {
     "</div><p>" +
     esc(content.about) +
     '</p></section><section class="contact" id="contact"><span class="eyebrow">HAVE SOMETHING IN MIND?</span><h2>Let’s build something<br><span style="color:var(--lime)">worth sharing.</span></h2>' +
-    (content.email
-      ? '<a href="mailto:' + esc(content.email) + '">Say hello ↗</a>'
-      : '<p class="notice">Open to conversations, collaborations, and new opportunities.</p>') +
+    socialLinks() +
     "</section>";
 }
 function detail(id) {

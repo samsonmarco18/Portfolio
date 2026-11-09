@@ -15,6 +15,14 @@ function valid_media(string $url): bool
 
 function valid_content(array $content): bool
 {
+    foreach (['linkedin', 'facebook', 'github'] as $network) {
+        if (!text_field($content, $network, 2000, false)) return false;
+        $url = $content[$network] ?? '';
+        if ($url !== '' && (!filter_var($url, FILTER_VALIDATE_URL)
+            || parse_url($url, PHP_URL_SCHEME) !== 'https'
+            || parse_url($url, PHP_URL_USER) !== null
+            || parse_url($url, PHP_URL_PASS) !== null)) return false;
+    }
     if (!text_field($content, 'name', 150) || trim($content['name']) === '' || !text_field($content, 'intro', 1500)
         || !text_field($content, 'about', 10000) || !text_field($content, 'email', 254)
         || ($content['email'] !== '' && !filter_var($content['email'], FILTER_VALIDATE_EMAIL))

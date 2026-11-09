@@ -9,7 +9,12 @@ function openPortfolioEditor() {
     field("Your name", "name", content.name) +
     field("Headline", "intro", content.intro) +
     field("About me", "about", content.about, true) +
-    field("Contact email (optional)", "email", content.email) +
+    '<div class="social-settings"><h2>Find me online</h2><p class="notice">Add your profile links below. Leave a field empty to hide it from your portfolio.</p>' +
+    field("Gmail / contact email (optional)", "email", content.email) +
+    field("LinkedIn profile URL (https://www.linkedin.com/in/your-name)", "linkedin", content.linkedin || "") +
+    field("Facebook profile URL (https://www.facebook.com/your-name)", "facebook", content.facebook || "") +
+    field("GitHub profile URL (https://github.com/your-name)", "github", content.github || "") +
+    '</div>' +
     '<label for="profile">Profile picture</label>' +
     (content.profile
       ? '<img class="portrait" src="' +
@@ -62,9 +67,9 @@ function openPortfolioEditor() {
         el.disabled = value;
       });
   }
-  ["name", "intro", "about", "email"].forEach((key) => {
+  ["name", "intro", "about", "email", "linkedin", "facebook", "github"].forEach((key) => {
     document.getElementById(key).oninput = (event) => {
-      content[key] = event.target.value;
+      content[key] = ["email", "linkedin", "facebook", "github"].includes(key) ? event.target.value.trim() : event.target.value;
       changed();
     };
   });

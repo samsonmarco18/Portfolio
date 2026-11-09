@@ -33,6 +33,19 @@ check($login['status'] === 200, 'PHP password verification signs in');
 check(str_contains($login['headers']['Set-Cookie'], 'HttpOnly; SameSite=Strict; Max-Age=28800; Secure'), 'session cookie has secure flags');
 preg_match('/portfolio_session=([a-f0-9]+)/', $login['headers']['Set-Cookie'], $match);
 $token = $match[1];
+$content['linkedin'] = 'https://www.linkedin.com/in/marco-example';
+$content['facebook'] = 'https://www.facebook.com/marco-example';
+$content['github'] = 'https://github.com/marco-example';
+$content['email'] = 'marco-example@gmail.com';
+check($call('/api/content', 'PUT', $content, $token)['status'] === 200, 'contact and social profiles save');
+$socialSaved = json_decode($call('/api/content')['body'], true);
+check($socialSaved['linkedin'] === $content['linkedin'] && $socialSaved['facebook'] === $content['facebook'] && $socialSaved['github'] === $content['github'] && $socialSaved['email'] === $content['email'], 'all four contact links persist');
+foreach (['javascript:alert(1)', 'http://github.com/example', 'https://user:password@github.com/example'] as $unsafe) {
+    $badSocial = $content; $badSocial['github'] = $unsafe;
+    check($call('/api/content', 'PUT', $badSocial, $token)['status'] === 400, 'unsafe social profile URL rejected');
+}
+$legacy = $content; unset($legacy['linkedin'], $legacy['facebook'], $legacy['github']);
+check(valid_content($legacy), 'existing profiles without social fields remain valid');
 check(json_decode($call('/api/status', token: $token)['body'], true)['authenticated'], 'session is stored server-side');
 check($call('/api/content', 'PUT', $content, $token, ['origin' => 'https://attacker.test'])['status'] === 403, 'cross-origin writes are denied');
 check($call('/api/content', 'PUT', null, $token, ['body' => '{bad json'])['status'] === 400, 'malformed JSON is rejected');
