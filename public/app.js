@@ -224,11 +224,16 @@ window.addEventListener("beforeunload", (e) => {
 });
 (async () => {
   try {
-    const defaults = await fetch("/default-content.json").then(r => { if (!r.ok) throw Error("Defaults unavailable"); return r.json(); });
-    try { content = await api("content"); }
-    catch (error) { if (location.pathname === "/my-admin") throw error; content = defaults; }
+    const [savedResult, defaultsResult] = await Promise.allSettled([
+      api("content"),
+      fetch("/default-content.json").then(r => { if (!r.ok) throw Error("Defaults unavailable"); return r.json(); })
+    ]);
+    const defaults = defaultsResult.status === "fulfilled" ? defaultsResult.value : null;
+    if (savedResult.status === "fulfilled") content = savedResult.value;
+    else if (defaults && location.pathname !== "/my-admin") content = defaults;
+    else throw savedResult.reason;
     content.projects = content.projects.map(project => {
-      const fallback = defaults.projects.find(item => item.id === project.id);
+      const fallback = defaults?.projects.find(item => item.id === project.id);
       if (!fallback) return project;
       return { ...project,
         images: project.images.length ? project.images : fallback.images,

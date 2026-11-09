@@ -1,5 +1,7 @@
 Options -Indexes
 RewriteEngine On
 RewriteRule ^(?:app\.js|admin\.js|editor\.js|styles\.css)$ - [L]
+RewriteRule ^(?:default-content\.json|favicon\.svg)$ - [L]
+RewriteRule ^assets/projects/(?:quizweb|ddpmss|harvee)/[a-z0-9-]+\.png$ - [L]
 RewriteRule ^index\.php$ - [L]
 RewriteRule ^ index.php [L]
