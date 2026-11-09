@@ -1,42 +1,60 @@
-﻿# Marco Samson portfolio — free deployment
+﻿# Marco Samson portfolio — PostgreSQL deployment
 
-Source is in `portfolio/`. The root `render.yaml` uses free Render hosting and Supabase Free storage. No paid disk is needed.
+The portfolio runs on free Render hosting and stores all editable content in PostgreSQL. Uploaded images are saved as Base64 TEXT strings and decoded into normal image responses. No storage bucket or paid Render disk is needed.
 
-## One-time setup
+## Deploy for free
 
-1. Create a free project at https://supabase.com.
-2. In Storage, create a bucket named `portfolio-private`. Keep Public bucket OFF. Password hashes and sessions also live here, so never make it public. Allow `application/json` or leave MIME restrictions unset. Allow objects up to 15 MB; images are stored inside JSON as Base64 strings.
-3. Copy your Project URL and legacy `service_role` API key from Supabase project settings. Use the server-only service role key, not the anon/publishable key. Never put it in source, browser code, or chat.
-4. Push this folder to GitHub, including `render.yaml` and `portfolio/`.
-5. In Render, choose New → Blueprint and connect the repository. Supply `ADMIN_PASSWORD` (at least 12 characters), `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` when prompted.
-6. Confirm the Free plan and deploy. Open your URL and visit `/my-admin` to sign in.
+1. Create a free PostgreSQL database with Neon (https://neon.com) or another PostgreSQL provider. Supabase PostgreSQL also works; use its database connection string, not its Storage API keys. Free plans have storage/compute limits.
+2. Copy the provider's PostgreSQL connection URI. Keep its TLS options; prefer `sslmode=verify-full` where supported. URL-encode special characters in passwords. Keep the URI secret.
+3. Push this folder to GitHub, including root `render.yaml` and the `portfolio` directory.
+4. On Render, choose New → Blueprint and connect the repository. Set `DATABASE_URL` to the connection URI and `ADMIN_PASSWORD` to a unique password of at least 12 characters.
+5. Deploy on the Free plan. Visit `/my-admin` on your Render URL to sign in and update content.
 
-The Blueprint sets `STORAGE_BACKEND=supabase`, `SUPABASE_BUCKET=portfolio-private`, Node version, build/start commands, and health check. No SQL migration or public bucket policy is needed. Only the server uses the privileged key. The admin editor works as before.
+At startup the app creates the `portfolio_private` schema and its `portfolio_objects` table if missing. The database role needs schema/table creation permissions on the first run. Subsequent starts preserve existing records. The app uses parameterized SQL queries and a small connection pool. Database failures fail startup rather than falling back to temporary files.
 
-## Image storage
+The schema is deliberately outside `public`. If using Supabase, do not expose `portfolio_private` through the Data API or grant anonymous access to it. Password hashes and session records share this private table with portfolio content.
 
-Images are saved as Base64 strings inside separate private JSON objects in Supabase. The server decodes them and serves normal image responses through `/media/images/...`. Captions and gallery order live in the content object. Images, content, password hashes, and sessions survive Render restarts because they are stored outside Render's temporary filesystem.
+## Render configuration
 
-Base64 adds roughly one-third to image sizes. Compress screenshots and stay within free storage/bandwidth limits. Removed or replaced images are retained to protect published content while editing; clean up unreferenced `images/` objects manually after backing up. Expired `sessions/` and old `limits/` objects can also be periodically removed from the private bucket.
+The Blueprint sets the following automatically:
 
-## Free service limits
+- Plan: Free, no disk
+- Root Directory: `portfolio`
+- Build: `npm ci --include=dev && npm test && npm run build`
+- Start: `npm start`
+- Health check: `/healthz`
+- `STORAGE_BACKEND=postgres`
+- `NODE_VERSION=24.13.1`
 
-Render Free sleeps after inactivity, so the first visit may load slowly. Supabase Free has quotas and may pause inactive projects; resume a paused project in Supabase. Check current terms at https://render.com/docs/free and https://supabase.com/pricing. Do not enable paid upgrades if you want to remain free.
+Supply `DATABASE_URL` and `ADMIN_PASSWORD` as secret environment variables. Render supplies `PORT` and `RENDER_EXTERNAL_URL`. For a custom domain, set `PUBLIC_URL` to its exact HTTPS origin and use that domain for the editor. Never put credentials in source or browser code.
 
-Previous Sites and local content use separate storage and are not automatically migrated.
+For Supabase, the Session pooler connection string can be used when the direct database hostname requires IPv6. No Supabase storage bucket, service role API key, or SQL Data API is used. For providers requiring a private CA, install their root certificate and configure the connection URI's `sslrootcert`; do not disable certificate validation.
 
-## Manual Render setup
+## Free plan limits
 
-Choose a Free Web Service. Root Directory: `portfolio`. Build Command: `npm ci && npm test && npm run build`. Start Command: `npm start`. Health Check: `/healthz`.
+Render Free sleeps after inactivity, so initial page loading can be slow. Render's own free PostgreSQL databases expire after 30 days; this Blueprint therefore asks for an external PostgreSQL connection instead of provisioning that temporary database. Neon/Supabase free plans have quotas and may suspend idle compute/projects. Check current terms before deploying:
 
-Set `STORAGE_BACKEND=supabase`, `SUPABASE_BUCKET=portfolio-private`, `NODE_VERSION=24.13.1`, and the three secrets above. No disk is needed. The app refuses temporary local storage on Render.
+- https://render.com/docs/free
+- https://neon.com/pricing
+- https://supabase.com/pricing
 
-For a custom domain, set `PUBLIC_URL` to the exact HTTPS origin and use that domain for the admin editor. Otherwise Render supplies `RENDER_EXTERNAL_URL`.
+Base64 uses about one-third more space than binary image files. Compress screenshots and keep them modest in size. Removed/replaced images remain stored to avoid breaking published pages during unsaved edits; periodically remove unreferenced `images/` records after backing up. Expired `sessions/` and old `limits/` records can also be cleaned up. Earlier local, Sites, and Supabase Storage data are separate and are not migrated automatically; re-upload content through the editor.
 
-## Password reset and backups
+## Backups and password reset
 
-`ADMIN_PASSWORD` initializes an empty bucket once. Changing it later does not overwrite the stored password. To reset: stop the service, change the secret, back up the bucket, remove only `auth` and all `sessions/` objects in the private bucket, and restart. Do not delete `content`, `images/`, or the bucket. Keep regular storage backups.
+Use your PostgreSQL provider's export tools or `pg_dump` to back up `portfolio_private` regularly. `ADMIN_PASSWORD` only initializes an empty database. Updating the environment variable does not change an existing password.
 
-## Local development
+To reset: stop the service, change `ADMIN_PASSWORD`, back up the database, run the following SQL in your private database console, then restart:
 
-From `portfolio`, run `npm ci`, `npm test`, or `npm run dev`. Development uses ignored `.data/` files. For a production-mode local test, set `ADMIN_PASSWORD` and run `npm start`. Set the Supabase variables as well to test remote storage. Variables are configured through your shell or Render; there is no automatic .env loader.
+```sql
+DELETE FROM portfolio_private.portfolio_objects
+WHERE object_key = 'auth' OR object_key LIKE 'sessions/%';
+```
+
+This resets authentication and invalidates sessions without deleting project content or images.
+
+## Local development and verification
+
+From `portfolio`, run `npm ci`, `npm test`, or `npm run dev`. Development mode uses ignored local `.data/` files. To use PostgreSQL locally, set `DATABASE_URL` and `ADMIN_PASSWORD`, then run `npm start`. There is no automatic .env loader; use shell or hosting environment variables.
+
+Tests exercise the schema, SQL inserts/upserts/deletes, image Base64 round trips, and schema reinitialization using PGlite (a local PostgreSQL WASM engine), plus server authentication, uploads, persistence, and origin checks. A live hosted connection still requires your own `DATABASE_URL`.

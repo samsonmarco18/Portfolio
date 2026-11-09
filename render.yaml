@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     rootDir: portfolio
-    buildCommand: npm ci && npm test && npm run build
+    buildCommand: npm ci --include=dev && npm test && npm run build
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
@@ -13,12 +13,8 @@ services:
       - key: NODE_VERSION
         value: 24.13.1
       - key: STORAGE_BACKEND
-        value: supabase
-      - key: SUPABASE_URL
+        value: postgres
+      - key: DATABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: SUPABASE_BUCKET
-        value: portfolio-private
       - key: ADMIN_PASSWORD
         sync: false
