@@ -15,6 +15,7 @@ function valid_media(string $url): bool
 
 function valid_content(array $content): bool
 {
+    if (!text_field($content, 'expertise', 4000, false)) return false;
     foreach (['linkedin', 'facebook', 'github'] as $network) {
         if (!text_field($content, $network, 2000, false)) return false;
         $url = $content[$network] ?? '';

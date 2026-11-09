@@ -73,7 +73,7 @@ function socialLinks() {
     ["facebook", "Facebook", "f", "Find me on Facebook"],
     ["github", "GitHub", "{ }", "Explore my repositories"]
   ];
-  const links = profiles.map(([key, label, icon, description]) => {
+  const links = profiles.map(([key, label]) => {
     const value = (content[key] || "").trim();
     if (!value) return "";
     let href;
@@ -87,14 +87,22 @@ function socialLinks() {
         href = url.href;
       } catch { return ""; }
     }
+    const account = key === "email" ? value : key === "github"
+      ? new URL(href).pathname.split("/").filter(Boolean)[0] || content.name
+      : content.name;
     return '<a class="social-link" href="' + esc(href) + '"' +
       (key === "email" ? "" : ' target="_blank" rel="noopener noreferrer"') +
-      '><span class="social-icon" aria-hidden="true">' + icon +
-      '</span><span class="social-copy"><strong>' + label + '</strong><small>' + description +
+      '><span class="social-copy"><strong>' + label + '</strong><small>' + esc(account) +
       '</small></span><span aria-hidden="true">&#8599;</span></a>';
   }).join("");
   return links ? '<div class="social-links" aria-label="Contact and social profiles">' + links + '</div>' :
     '<p class="notice">Open to conversations, collaborations, and new opportunities.</p>';
+}
+function expertise() {
+  const items = (content.expertise ?? "Web application development\nResponsive interfaces\nDashboards & workflow design\nDatabase-driven applications")
+    .split("\n").map(item => item.trim()).filter(Boolean);
+  return items.length ? '<div class="expertise"><h3>Expertise</h3><ul>' +
+    items.map(item => '<li>' + esc(item) + '</li>').join("") + '</ul></div>' : "";
 }
 function home() {
   app.innerHTML =
@@ -119,9 +127,10 @@ function home() {
         esc(content.name) +
         '">'
       : "") +
-    "</div><p>" +
+    '</div><div class="about-copy"><p>' +
     esc(content.about) +
-    '</p></section><section class="contact" id="contact"><span class="eyebrow">HAVE SOMETHING IN MIND?</span><h2>Let’s build something<br><span style="color:var(--lime)">worth sharing.</span></h2>' +
+    "</p>" + expertise() +
+    '</div></section><section class="contact" id="contact"><span class="eyebrow">HAVE SOMETHING IN MIND?</span><h2>Let’s build something<br><span style="color:var(--lime)">worth sharing.</span></h2>' +
     socialLinks() +
     "</section>";
 }
