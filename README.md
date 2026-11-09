@@ -30,7 +30,7 @@ The existing design, three project pages, profile editor, image captions, replac
 1. Push this repository, including the updated `render.yaml`, to GitHub.
 2. In Render choose New → Blueprint and connect the repository. For an existing Blueprint, select it and use Manual Sync after pushing the change. Deploying only the individual web service does not create the database.
 3. Review the two resources: the Free Docker web service `marco-samson-portfolio` and Free PostgreSQL database `marco-samson-db`. Render permits only one active Free PostgreSQL database per workspace; if you already have one, reference that existing database instead of creating another.
-4. Set `ADMIN_PASSWORD` to a unique password of 12–72 characters. `DATABASE_URL` is automatically supplied from the database's internal connection string; do not enter it manually for Blueprint deployment.
+4. Render generates `ADMIN_PASSWORD` if it is missing. Read it privately from the web service Environment page for your first login, or set your own unique password of 12–72 characters before the database's first initialization. Existing environment values are preserved. `DATABASE_URL` is automatically supplied from the database's internal connection string; do not enter it manually for Blueprint deployment.
 5. Apply the Blueprint. Render provisions and connects both resources, builds the PHP/Apache image, runs PHP checks, and initializes the schema/admin before starting Apache.
 6. Open the web service URL and visit `/my-admin` to edit the portfolio.
 
@@ -43,6 +43,18 @@ Use the **Docker** runtime if creating a service manually. Dockerfile path is `.
 If replacing an existing Node Render service, create a new Docker service from the updated Blueprint/repository and reuse the same PostgreSQL `DATABASE_URL`. Do not delete the database. If Render lets you recreate/reconfigure the existing service as Docker, use the same settings. A local source change does not automatically update an existing deployment.
 
 ## PostgreSQL and images
+
+### If startup initialization fails
+
+Push the latest source and use **Blueprint → Manual Sync**, then inspect the startup log. It now reports the failing stage (`connection`, `schema`, or `admin`) and a credential-safe explanation. Transient connection failures are retried up to three times; authentication and schema errors stop immediately.
+
+- `ADMIN_PASSWORD is missing` or a length error: set a 12–72 byte password on the **web service → Environment** page and redeploy. Generating a missing variable does not replace an existing empty/invalid value.
+- Missing/invalid `DATABASE_URL`: sync the Blueprint so its `fromDatabase` reference is applied. If deploying manually, use the database's **Internal Database URL**.
+- Hostname/unreachable error: confirm PostgreSQL is Available and the web service and database are in the same Render region. Wait for database provisioning to finish before redeploying.
+- Database username/password error: replace stale `DATABASE_URL` credentials using the linked database. Changing the admin password does not fix PostgreSQL credentials.
+- Schema permissions error: use a database owner account for first initialization. Do not drop tables or recreate the database to troubleshoot.
+
+Do not paste `DATABASE_URL` or passwords into logs/chat. If it still fails, share only the new diagnostic line beginning `Initialization failed [stage]`.
 
 The app uses PDO PostgreSQL with parameterized queries. Data is stored in `portfolio_private.portfolio_objects`; image bytes are Base64 TEXT strings, metadata is JSONB. `/media/images/...` decodes those strings and serves actual PNG/JPEG/WebP images. Project content, captions, gallery order, profile pictures, password hashes, and sessions survive web-service restarts.
 
@@ -71,6 +83,7 @@ You can also build/run the container with Docker, passing `DATABASE_URL`, `ADMIN
 
 ```powershell
 php tests/run.php
+php tests/startup.php
 ```
 
 The API checks use an in-memory test storage implementation to verify login, cookie flags, origin checks, logout, rate limiting, uploads, captions/profile saving, validation, and legacy password compatibility. They do not require a database or alter production data.

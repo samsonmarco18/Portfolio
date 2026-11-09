@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/DatabaseConfig.php';
 
 interface Storage
 {
@@ -26,28 +27,9 @@ final class PostgresStorage implements Storage
 
     public static function connect(): self
     {
-        $url = parse_url(getenv('DATABASE_URL') ?: '');
-        if (!$url || !in_array($url['scheme'] ?? '', ['postgres', 'postgresql'], true)) {
-            throw new RuntimeException('Set DATABASE_URL to a PostgreSQL connection URI.');
-        }
-        $host = $url['host'] ?? '';
-        $database = rawurldecode(ltrim($url['path'] ?? '', '/'));
-        if (!preg_match('/^[a-zA-Z0-9.\-:\[\]]+$/D', $host) || !preg_match('/^[a-zA-Z0-9_\-.]+$/D', $database)) {
-            throw new RuntimeException('Invalid PostgreSQL host or database name.');
-        }
-        parse_str($url['query'] ?? '', $query);
-        $ssl = $query['sslmode'] ?? 'require';
-        if (!in_array($ssl, ['disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'], true)) {
-            throw new RuntimeException('Invalid database sslmode.');
-        }
-        $dsn = sprintf('pgsql:host=%s;port=%d;dbname=%s;sslmode=%s;connect_timeout=15', $host, $url['port'] ?? 5432, $database, $ssl);
-        if (isset($query['sslrootcert'])) {
-            if (!is_string($query['sslrootcert']) || preg_match('/[;\x00\r\n]/', $query['sslrootcert'])) {
-                throw new RuntimeException('Invalid certificate path.');
-            }
-            $dsn .= ';sslrootcert=' . $query['sslrootcert'];
-        }
-        $pdo = new PDO($dsn, rawurldecode($url['user'] ?? ''), rawurldecode($url['pass'] ?? ''), [
+        $config = database_config(getenv('DATABASE_URL') ?: '');
+        if (!in_array('pgsql', PDO::getAvailableDrivers(), true)) throw new ConfigurationException('missing_pgsql_driver');
+        $pdo = new PDO($config['dsn'], $config['user'], $config['password'], [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_EMULATE_PREPARES => false,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -56,14 +38,13 @@ final class PostgresStorage implements Storage
         return new self($pdo);
     }
 
-    public function initialize(): void
+    public function initialize(?callable $progress = null): void
     {
+        if ($progress) $progress('schema');
         $this->db->exec(file_get_contents(__DIR__ . '/../db/001_storage.sql'));
+        if ($progress) $progress('admin');
         if ($this->get('auth') === null) {
-            $password = getenv('ADMIN_PASSWORD') ?: '';
-            if (strlen($password) < 12 || strlen($password) > 72) {
-                throw new RuntimeException('Set ADMIN_PASSWORD to 12–72 characters.');
-            }
+            $password = initial_admin_password();
             $auth = base64_encode(json_encode(['passwordHash' => password_hash($password, PASSWORD_DEFAULT)], JSON_THROW_ON_ERROR));
             $statement = $this->db->prepare('INSERT INTO portfolio_private.portfolio_objects (object_key, data_base64) VALUES (:key, :data) ON CONFLICT (object_key) DO NOTHING');
             $statement->execute(['key' => 'auth', 'data' => $auth]);

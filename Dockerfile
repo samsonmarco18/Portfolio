@@ -16,7 +16,7 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/portfolio.ini
 COPY docker/start.sh /usr/local/bin/portfolio-start
 RUN chmod +x /usr/local/bin/portfolio-start \
     && find backend public tests -name '*.php' -print0 | xargs -0 -n1 php -l
-RUN php tests/run.php
+RUN php tests/run.php && php tests/startup.php
 
 EXPOSE 10000
 CMD ["portfolio-start"]
