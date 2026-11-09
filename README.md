@@ -27,12 +27,16 @@ The existing design, three project pages, profile editor, image captions, replac
 
 ## Deploy to Render for free
 
-1. Create a PostgreSQL database with a free provider such as Neon (https://neon.com), or use an existing PostgreSQL database. Keep within the provider's free quotas. Render's own free PostgreSQL databases expire after 30 days, so this Blueprint does not provision one.
-2. Copy its PostgreSQL URI, including the provider's TLS settings. Prefer `sslmode=verify-full` with a trusted CA when supported. URL-encode special characters in passwords. Do not share or commit this URI.
-3. Push this repository to GitHub. In Render choose New → Blueprint and connect the repository.
-4. Set `DATABASE_URL` to the URI and `ADMIN_PASSWORD` to a unique password of 12–72 characters.
-5. Deploy the Free Docker service. Render builds the PHP/Apache image, runs PHP syntax/API checks, then initializes the schema and first admin password before starting Apache.
-6. Open the site and visit `/my-admin` to log in and edit your portfolio.
+1. Push this repository, including the updated `render.yaml`, to GitHub.
+2. In Render choose New → Blueprint and connect the repository. For an existing Blueprint, select it and use Manual Sync after pushing the change. Deploying only the individual web service does not create the database.
+3. Review the two resources: the Free Docker web service `marco-samson-portfolio` and Free PostgreSQL database `marco-samson-db`. Render permits only one active Free PostgreSQL database per workspace; if you already have one, reference that existing database instead of creating another.
+4. Set `ADMIN_PASSWORD` to a unique password of 12–72 characters. `DATABASE_URL` is automatically supplied from the database's internal connection string; do not enter it manually for Blueprint deployment.
+5. Apply the Blueprint. Render provisions and connects both resources, builds the PHP/Apache image, runs PHP checks, and initializes the schema/admin before starting Apache.
+6. Open the web service URL and visit `/my-admin` to edit the portfolio.
+
+**Render Free PostgreSQL expires after 30 days.** Export your content before expiry. For longer-term free storage, use an external free PostgreSQL provider and replace the `DATABASE_URL.fromDatabase` block with `sync: false`, then remove the `databases` block and enter your external URI. Do not remove/delete a database containing your only copy of saved content.
+
+If the web service already uses an external database, the updated Blueprint connects it to a new, initially empty database. Existing data is not copied automatically; back it up and import it if needed.
 
 Use the **Docker** runtime if creating a service manually. Dockerfile path is `./Dockerfile`; repository root is the build context. Leave custom build/start commands blank. Health check is `/healthz`. No disk, Node build, or npm command is needed. Render supplies `PORT` and `RENDER_EXTERNAL_URL`. For a custom domain, set `PUBLIC_URL` to the exact HTTPS origin and use that domain for the editor.
 
